@@ -12,11 +12,10 @@ images:
   newTag: d4d3f6e353a7f300de0e91a5bf9333a222d412bc
 
 configMapGenerator:
-- literals:
-  - GITHUB_ORG=""
-  name: github-config
-  behavior: replace
-
+  - literals:
+      - GITHUB_ORG=redhat-hac-qe
+    name: github-config
+    behavior: replace
 namespace: application-service
 
 patches:
