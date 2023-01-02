@@ -1,0 +1,86 @@
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: view-appstudio
+rules:
+- apiGroups:
+  - appstudio.redhat.com
+  resources:
+  - applications
+  - componentdetectionqueries
+  - components
+  - enterprisecontractpolicies
+  - environments
+  - integrationtestscenarios
+  - promotionruns
+  - releaseplanadmissions
+  - releaseplans
+  - releases
+  - releasestrategies
+  - snapshotenvironmentbindings
+  - snapshots
+  - spiaccesschecks
+  - spiaccesstokenbindings
+  - spifilecontentrequests
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - managed-gitops.redhat.com
+  resources:
+  - gitopsdeploymentmanagedenvironments
+  - gitopsdeployments
+  - gitopsdeploymentsyncruns
+  - operations
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - jvmbuildservice.io
+  resources:
+  - artifactbuilds
+  - dependencybuilds
+  - rebuiltartifacts
+  - systemconfigs
+  - tektonwrappers
+  - jbsconfigs
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - pipelinesascode.tekton.dev
+  resources:
+  - repositories
+  verbs:
+  - get
+  - list
+  - watch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: everyone-view
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: 'stage'
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: everyone-view-appstudio
+subjects:
+- kind: Group
+  apiGroup: rbac.authorization.k8s.io
+  name: 'stage'
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view-appstudio

@@ -31,19 +31,10 @@ More examples of using Kustomize to drive deployments using GitOps can be [found
 ## Component testing and building of images
 
 [Pipelines as Code](https://pipelinesascode.com/) is deployed and available for testing and building of images.
-To test and run builds for a component, create the necessary resources.
-The `gitops` component can be used as an example.
+To test and run builds for a component, add your github repository to `components/tekton-ci/repository.yaml`.
 
-These are the steps to create a component pipeline:
+Target repository has to have installed GitHub app - [AppStudio Staging CI](https://github.com/apps/appstudio-staging-ci) and pipelineRuns created in `.tekton` folder, example [Build Service](https://github.com/redhat-appstudio/build-service/tree/main/.tekton). Target image repository in quay.io must exist and robot account `redhat-appstudio+staginguser` has to have `write` permission on the repository.
 
-1) Create a `.tekton` directory under the component directory. Example: `components/(team-name)/.tekton`.
-2) Create the Tekton resources to trigger and run the pipeline.
-    - Repository: The Repository configures Pipelines as Code to monitor changes in your repository.
-    - PersistentVolumeClaim: A workspace for the pipeline.
-    - ServiceAccount: This will be the service account the pipeline will run as.
-    - Kustomization: This is necessary to install the component resources defined above.
-
-Target repository has to have installed GitHub app - [AppStudio Staging CI](https://github.com/apps/appstudio-staging-ci) and pipelineRuns created in `.tekton` folder, example [Build Service](https://github.com/redhat-appstudio/build-service/tree/main/.tekton)
 
 ## Maintaining your components
 
@@ -60,6 +51,22 @@ The prerequisites are:
 - You must have `kubectl`, `oc`, `jq` and [`yq`](https://github.com/mikefarah/yq) installed.
 - You must have `kubectl` and `oc` pointing to an existing OpenShift cluster, that you wish to deploy to. Alternatively, you can configure a local CodeReady Containers VM to deploy to.
 - The script `./hack/setup/install-pre-req.sh` will install these prerequisites for you, if they're not already installed.
+
+**Note - Mac OS**
+
+If you're using Mac OS, make sure you are using GNU version of `sed` (`sed --version` -> **GNU sed 4.8**), openssl `openssl version` >= v3.0.2 and bash (`bash --version` >= **GNU bash, version 5.2**), because some of the configuration scripts in this repository depend on them.
+
+You can install correct versions of these tools with:
+```bash
+brew install openssl@3 gnu-sed bash
+```
+Then make sure the $PATH is updated to point to those tools' binaries (by updating your .bashrc/.zshrc file):
+```bash
+export PATH="/usr/local/opt/openssl@3/bin:$PATH"
+export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:$PATH"
+export PATH="/usr/local/bin/bash:${PATH}"
+```
+After opening a new terminal window you should be using correct versions of these tools by default.
 
 ### Optional: CodeReady Containers Setup
 
@@ -86,22 +93,28 @@ Steps:
 
 #### Post-bootstrap Service Provider Integration(SPI) Configuration
 
-> **NOTE:**  This process is automated in `preview` mode
+SPI requires Service Provider to have configured OAuth application so it can process the OAuth flow. Follow [Configuring Service Providers](https://github.com/redhat-appstudio/service-provider-integration-operator/blob/main/docs/ADMIN.md#configuring-service-providers) in SPI admin documentation.
+
+> Authorization URL of staging server: `https://spi-oauth-spi-system.apps.appstudio-stage.x99m.p1.openshiftapps.com`  
+Callback URL of staging server: `https://spi-oauth-spi-system.apps.appstudio-stage.x99m.p1.openshiftapps.com/oauth/callback`
+
+> **NOTE:**  Following process is automated in `preview` mode
 
 SPI components fails to start right after the bootstrap. It requires manual configuration in order to work properly:
 
-1) Edit `./components/spi/config.yaml` [see SPI Configuraton Documentation](https://github.com/redhat-appstudio/service-provider-integration-operator#configuration).
-2) In CRC setup add a random string for value of `sharedSecret`
-3) Create a `shared-configuration-file` Secret (`kubectl create secret generic `shared-configuration-file` --from-file=components/spi/config.yaml -n spi-system`)
-4) In few moments, SPI pods should start
+1) Edit `./components/spi/base/config.yaml` [see SPI Configuraton Documentation](https://github.com/redhat-appstudio/service-provider-integration-operator/blob/main/docs/ADMIN.md#configuration).
+2) Create a `shared-configuration-file` Secret (`kubectl create secret generic `shared-configuration-file` --from-file=components/spi/base/config.yaml -n spi-system`)
+3) In few moments, SPI pods should start
 
 SPI Vault instance has to be manually initialized. There is a script to help with that:
 
-1) Make sure that your cluster user has at least permissions `./components/spi/vault_role.yaml`
+1) Make sure that your cluster user has at least permissions `./components/authentication/spi-vault-admin.yaml`
 2) Clone SPI operator repo `git clone https://github.com/redhat-appstudio/service-provider-integration-operator && cd service-provider-integration-operator`
 3) run `vault-init.sh` script from repo root directory `./hack/vault-init.sh`
 
 ### Optional: Install Toolchain (Sandbox) Operators
+
+This part is automated if you use `--toolchain` parameter of `hack/bootstrap-cluster.sh`
 
 There are two scripts which you can use:
 
@@ -117,6 +130,8 @@ Both of the scripts will:
     - Proxy URL.
 
 #### SSO
+
+This part is automated if you use `--toolchain --keycloak` parameters of `hack/bootstrap-cluster.sh`. These parameters install toolchain operators (`./hack/sandbox-development-mode.sh`) and configure them to use keycloak, which is automatically deployed as part of `development` overlay.
 
 In development mode, the Toolchain Operators are configured to use Keycloak instance that is internally used by the Sandbox team. If you want to reconfigure it to use your own Keycloak instance, you need to add a few parameters to `ToolchainConfig` resource in `toolchain-host-operator` namespace.
 This is an example of the needed parameters and their values:
@@ -190,80 +205,9 @@ Access to namespaces is managed by [components/authentication](components/authen
 
 Users can be added to organizations by Michal Kovarik <mkovarik@redhat.com> and by Shoubhik Bose <shbose@redhat.com>.
 
-## Monitoring for Prometheus clusters
+## Monitoring
 
-Note:
-
-This section uses **Grafana cluster** and **Prometheus cluster** to refer to the clusters on which Grafana and Prometheus are deployed, respectively. In a multi-cluster topology, there will be a single cluster on which Grafana is deployed, whereas Prometheus will be deployed on all clusters where metrics need to be collected.
-
-### Setup
-
-First, create the `appstudio-workload-monitoring` namespace on each Prometheus or Grafana cluster, if it does not exist yet:
-
-```
-$ oc create namespace appstudio-workload-monitoring
-```
-
-and create the "base" resources by running the following command:
-
-```
-$ kustomize build components/monitoring/base | oc apply -f -   
-```
-
-#### OAuth2 proxy secrets
-
-Both Prometheus and Grafana UIs are protected by an OAuth2 proxy running as a sidecar container and which delegates the authentication to GitHub. 
-Users must belong to the [Red Hat Appstudio SRE organization](https://github.com/redhat-appstudio-sre) team configured in the OAuth2 proxy to be allowed to access the Web UIs.
-
-Create the secrets with the following commands:
-
-```
-# on each Prometheus cluster
-$ ./hack/setup-monitoring.sh oauth2-secret prometheus-oauth2-proxy $PROMETHEUS_GITHUB_CLIENT_ID $PROMETHEUS_GITHUB_CLIENT_SECRET $PROMETHEUS_GITHUB_COOKIE_SECRET
-
-# on the Grafana cluster
-$ ./hack/setup-monitoring.sh oauth2-secret grafana-oauth2-proxy $GRAFANA_GITHUB_CLIENT_ID $GRAFANA_GITHUB_CLIENT_SECRET $GRAFANA_GITHUB_COOKIE_SECRET
-```
-
-The `PROMETHEUS_GITHUB_CLIENT_ID`/`PROMETHEUS_GITHUB_CLIENT_SECRET` and `GRAFANA_GITHUB_CLIENT_ID`/`GRAFANA_GITHUB_CLIENT_SECRET` value pairs must match an existing "OAuth Application" on GitHub - see [OAuth apps](https://github.com/organizations/redhat-appstudio-sre/settings/applications) in the [Red Hat Appstudio SRE organization](https://github.com/organizations/redhat-appstudio-sre). The `PROMETHEUS_GITHUB_COOKIE_SECRET` and `GRAFANA_GITHUB_COOKIE_SECRET` can be generated using the [following instructions](https://oauth2-proxy.github.io/oauth2-proxy/docs/configuration/overview#generating-a-cookie-secret).
-
-Each Prometheus instance must have its own OAuth Application on GitHub and its own `prometheus-oauth2-proxy` secret, whereas Grafana needs a single OAuth Application on GitHub since it is only deployed once.
-
-These `prometheus-oauth2-proxy` and `grafana-oauth2-proxy` secrets must be created before deploying Prometheus and Grafana, otherwise the pods will fail to run.
-
-#### Grafana Datasources
-
-Grafana datasources contain the connection settings to the Prometheus instances. These datasources are stored in secrets in the `appstudio-workload-monitoring` namespace of the **Grafana cluster**.
-
-The Prometheus endpoints called by Grafana are protected by an OAuth proxy running as a sidecar container and which checks that the incoming requests contain a valid token. A token is valid if it belongs to a service account of the **Prometheus cluster** which has the RBAC permission to "get namespaces". Such a permission can be obtained with the `cluster-monitoring-view` cluster role.
-
-In a multi-cluster setup, Grafana will have a datasource secret for each instance of Prometheus. 
-A datasource has a name (`DATASOURCE_NAME`), an URL (`PROMETHEUS_URL`) and a token (`GRAFANA_OAUTH_TOKEN`) obtained as follow:
-
-`DATASOURCE_NAME` is the name of the datasource as it will appear in Grafana. It is also the name of the secret which will contain the YAML file defining the datasource itself.
-`DATASOURCE_NAME` is an arbitrary name, for example `cluster-1-prometheus-openshift-ds` for Prometheus running in the `openshift-monitoring` namespace of Cluster-1.
-
-`PROMETHEUS_URL` is obtained from the route created for Prometheus in the `openshift-monitoring` and `appstudio-workload-monitoring` namespaces in the **Prometheus cluster**:
-```
-$ PROMETHEUS_URL=`oc get route/prometheus-k8s -n openshift-monitoring -o json | jq -r '.status.ingress[0].host'`
-
-$ PROMETHEUS_URL=`oc get route/prometheus-oauth -n appstudio-workload-monitoring -o json | jq -r '.status.ingress[0].host'`
-```
-
-`GRAFANA_OAUTH_TOKEN` is obtained by requesting a token for the `grafana-oauth` service account in the **Prometheus cluster**:
-```
-$ GRAFANA_OAUTH_TOKEN=`oc create token grafana-oauth -n appstudio-workload-monitoring`
-```
-Notes: 
-- The `grafana-oauth` service account is created by `components/monitoring/base/configure-prometheus.yaml` along with a binding to the `cluster-monitoring-view` cluster role. 
-- The same token can be used in datasources secrets related to the Prometheus instances deployed in the `openshift-monitoring` and `appstudio-workload-monitoring` namespaces.
-
-Using the values obtained from the **Prometheus cluster**, run the following command on the **Grafana cluster**:
-
-```
-$ ./hack/setup-monitoring.sh grafana-datasource-secret $DATASOURCE_NAME $PROMETHEUS_URL $GRAFANA_OAUTH_TOKEN
-```
-
+Described in [components/monitoring](components/monitoring/README.md)
 
 ## App Studio/HACBS Build System
 

@@ -1,6 +1,40 @@
-#!/bin/bash
+#!/bin/bash -e
 
-MODE=$1
+# Print help message
+function print_help() {
+  echo "Usae: $0 MODE [-t|--toolchain] [-kc|--keycloak] [-h|--help]"
+  echo "  MODE             upstream/preview (default: upstream)"
+  echo "  -t, --toolchain  (only in preview mode) Install toolchain operators"
+  echo "  -kc, --keycloak  (only in preview mode) Configure the toolchain operator to use keycloak deployed on the cluster"
+  echo "  -h, --help       Show this help message and exit"
+  echo
+  echo "Example usage: \`$0 preview --toolchain --keycloak"
+}
+
+while [[ $# -gt 0 ]]; do
+  key=$1
+  case $key in
+    --toolchain|-t)
+      TOOLCHAIN=true
+      shift
+      ;;
+    --keycloak|-kc)
+      KEYCLOAK=true
+      shift
+      ;;
+    preview|upstream)
+      MODE=$1
+      shift
+      ;;
+    -h|--help)
+      print_help
+      exit 0
+      ;;
+    *)
+      shift
+      ;;
+  esac
+done
 
 ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"/..
 
@@ -72,9 +106,7 @@ echo "Add Role/RoleBindings for OpenShift GitOps:"
 kubectl apply --kustomize $ROOT/openshift-gitops/cluster-rbac
 
 echo "Setting secrets for Tekton Results"
-if ! kubectl get namespace tekton-pipelines &>/dev/null; then
-  kubectl create namespace tekton-pipelines
-fi
+kubectl create namespace tekton-pipelines -o yaml --dry-run=client | oc apply -f-
 
 OPENSSLDIR=`openssl version -d | cut -f2 -d'"'`
 
@@ -103,9 +135,7 @@ fi
 
 echo
 echo "Setting secrets for GitOps"
-if ! kubectl get namespace gitops &>/dev/null; then
-  kubectl create namespace gitops
-fi
+kubectl create namespace gitops -o yaml --dry-run=client | oc apply -f-
 if ! kubectl get secret -n gitops gitops-postgresql-staging &>/dev/null; then
   kubectl create secret generic gitops-postgresql-staging \
     --namespace=gitops \
@@ -114,9 +144,7 @@ fi
 
 echo
 echo "Setting secrets for Quality Dashboard"
-if ! kubectl get namespace quality-dashboard &>/dev/null; then
-  kubectl create namespace quality-dashboard
-fi
+kubectl create namespace quality-dashboard -o yaml --dry-run=client | oc apply -f-
 if ! kubectl get secret -n quality-dashboard quality-dashboard-secrets &>/dev/null; then
   kubectl create secret generic quality-dashboard-secrets \
     --namespace=quality-dashboard \
@@ -171,5 +199,5 @@ case $MODE in
         fi
         ;;
     "preview")
-        $ROOT/hack/preview.sh ;;
+        $ROOT/hack/preview.sh $TOOLCHAIN $KEYCLOAK;;
 esac

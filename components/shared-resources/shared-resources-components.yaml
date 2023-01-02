@@ -9,8 +9,8 @@ rules:
     resources:
       - sharedsecrets
     resourceNames:
-      - redhat-appstudio-staginguser
       - infra-deployments-pr-creator
+      - redhat-appstudio-staginguser
     verbs:
       - use 
   - verbs:
@@ -33,37 +33,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: pipeline
-    namespace: build-templates
-  - kind: ServiceAccount
-    name: pipeline
-    namespace: pvc-cleaner
-  - kind: ServiceAccount
-    name: pipeline
-    namespace: build-service
-  - kind: ServiceAccount
-    name: pipeline
-    namespace: gitops
-  - kind: ServiceAccount
-    name: pipeline
-    namespace: application-service
-  - kind: ServiceAccount
-    name: pipeline
-    namespace: spi-system
-  - kind: ServiceAccount
-    name: pipeline
-    namespace: release-service
-  - kind: ServiceAccount
-    name: pipeline
-    namespace: e2e-tests
-  - kind: ServiceAccount
-    name: pipeline
-    namespace: enterprise-contract-service
-  - kind: ServiceAccount
-    name: pipeline
-    namespace: integration-service
-  - kind: ServiceAccount
-    name: pipeline
-    namespace: jvm-build-service
-  - kind: ServiceAccount
-    name: pipeline
-    namespace: tekton-pipelines
+    namespace: tekton-ci

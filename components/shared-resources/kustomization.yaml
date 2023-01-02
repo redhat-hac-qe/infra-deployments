@@ -16,11 +16,11 @@ resources:
 - https://raw.githubusercontent.com/openshift/api/9d91c1f6cfd40449bd2af8a6b697a3bf7baf933b/sharedresource/v1alpha1/0000_10_sharedsecret.crd.yaml
 - scc.yaml
 - shared-resources-components.yaml
-- redhat-appstudio-staginguser-secret.yaml
 - infra-deployments-pr-creator.yaml
 - redhat-appstudio-user-workload-sharedsecret.yaml
 - globally-shared-secrets-clusterrole.yaml
 - test-team-snyk-shared-secret.yaml
+- redhat-appstudio-staginguser-secret.yaml
 
 images:
 - name: \${NODE_DRIVER_REGISTRAR_IMAGE}
