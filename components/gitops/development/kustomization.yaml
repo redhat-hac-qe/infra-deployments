@@ -9,3 +9,18 @@ images:
   - name: \${COMMON_IMAGE}
     newName: quay.io/redhat-appstudio/gitops-service
     newTag: 491d83f7a0e67f20a872269572f9e8392452f00d
+
+patches:
+  - target:
+      kind: Deployment
+      name: gitops-appstudio-service-controller-manager
+    path: controller-limits-patch.json
+  - target:
+      kind: Deployment
+      name: gitops-core-service-controller-manager
+    path: core-limits-patch.json
+  - target:
+      kind: Deployment
+      name: gitops-service-agent-controller-manager
+    path: agent-limits-patch.json
+    
