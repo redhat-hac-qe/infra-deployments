@@ -23,8 +23,19 @@ spec:
         directAccessGrantsEnabled: true
         defaultClientScopes: 
           - nameandterms
+          - email
+          - profile
+          - roles
+          - web-origins
+        optionalClientScopes:
+          - address
+          - microprofile-jwt
+          - offline_access
+          - phone
     clientScopes:
       - name: nameandterms
+        protocol: openid-connect
+      - name: email
         protocol: openid-connect
     displayName: Redhat External for HAC
     enabled: true

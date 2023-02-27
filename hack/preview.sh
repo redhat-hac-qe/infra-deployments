@@ -275,7 +275,6 @@ while :; do
   sleep $INTERVAL
 done
 
-
 if $KEYCLOAK && $TOOLCHAIN ; then
   echo "Restarting toolchain registration service to pick up keycloak's certs."
   oc rollout restart StatefulSet/keycloak -n dev-sso
