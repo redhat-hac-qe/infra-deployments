@@ -299,3 +299,6 @@ if $KEYCLOAK && $TOOLCHAIN ; then
 	  exit 1
   fi
 fi
+
+podman login -u hacdev+hac_dev_bot -p $DOCKER_TOKEN quay.io
+kubectl create secret docker-registry redhat-appstudio-user-workload -n build-templates --from-file=.dockerconfigjson=${XDG_RUNTIME_DIR}/containers/auth.json
