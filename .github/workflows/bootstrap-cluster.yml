@@ -1,0 +1,37 @@
+name: Bootstrap cluster
+on: [pull_request]
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Run bootstrap script
+        shell: bash
+        env:
+          BROKER_PASSWORD: ${{ secrets.BROKER_PASSWORD }}
+          DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+          MY_GITHUB_TOKEN: ${{ secrets.MY_GITHUB_TOKEN }}
+          OC_LOGIN_TOKEN: ${{ secrets.OC_LOGIN_TOKEN }}
+          SHARED_SECRET: ${{ secrets.SHARED_SECRET }}
+          SPI_CLIENT_ID: ${{ secrets.SPI_CLIENT_ID }}
+          SPI_CLIENT_SECRET: ${{ secrets.SPI_CLIENT_SECRET }}
+          BROKER_USERNAME: "pactUser"
+          HAS_DEFAULT_IMAGE_REPOSITORY: "quay.io/hacdev/build_service"
+          MY_GIT_FORK_REMOTE: "origin"
+          MY_GIT_REPO_URL: "https://github.com/redhat-hac-qe/infra-deployments.git"
+          OC_DOWNLOAD_URL: "https://downloads-openshift-console.apps.hac-devsandbox.5unc.p1.openshiftapps.com/amd64/linux/oc.tar"
+          SPI_API_SERVER: "https://api-toolchain-host-operator.apps.hac-devsandbox.5unc.p1.openshiftapps.com/"
+        run: |
+          # Setup GIT access
+          git config --global user.name 'Katka92'
+          git config --global user.email 'kkanova@redhat.com'
+          
+          # set -x for debug
+          set -x
+           
+          #Setup OC and login to cluster
+          oc login --token="${{ secrets.OC_LOGIN_TOKEN }}"
+          
+          # Bootstrap the cluster
+          hack/bootstrap-cluster.sh preview --toolchain --keycloak --broker
+
