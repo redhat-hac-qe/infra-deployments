@@ -9,6 +9,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: Run bootstrap script
         shell: bash
+        id: bootstrap
+        timeout-minutes: 30
         env:
           # getting secrets from GH
           BROKER_PASSWORD: ${{ secrets.BROKER_PASSWORD }}
@@ -61,3 +63,18 @@ jobs:
             echo $REDHAT_APPSTUDIO_USER_WORKLOAD >> docker.config
             oc create secret docker-registry redhat-appstudio-user-workload -n build-templates --from-file=.dockerconfigjson=docker.config
           fi
+      - name: Send message to Slack
+        shell: bash
+        env: 
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          BOOTSTRAP_JOB_STATUS: ${{ steps.bootstrap.outcome }}
+          CHANNEL_ID: "C04U7TA1BT8" # forum-rhtap-test-execution-alerts
+          ACTION_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        run: |
+          if [[ $BOOTSTRAP_JOB_STATUS == 'success' ]]; then
+            icon=":done-circle-check:"
+          else
+            icon=":failed:"
+          fi
+
+          curl -H "Authorization: Bearer ${SLACK_BOT_TOKEN}" -d "text=${icon} Job *bootstrap* ended with ${BOOTSTRAP_JOB_STATUS}. <$ACTION_URL|View logs>" -d "channel=${CHANNEL_ID}" -X POST https://slack.com/api/chat.postMessage
