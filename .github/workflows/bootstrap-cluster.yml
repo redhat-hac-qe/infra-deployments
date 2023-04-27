@@ -63,6 +63,10 @@ jobs:
             echo $REDHAT_APPSTUDIO_USER_WORKLOAD >> docker.config
             oc create secret docker-registry redhat-appstudio-user-workload -n build-templates --from-file=.dockerconfigjson=docker.config
           fi
+
+          # Prune any user spaces older than 2 days
+          oc project toolchain-host-operator
+          oc get usersignup -o json | jq -r --argjson timestamp 172800 '.items[] | select ((.metadata.creationTimestamp | fromdateiso8601 < now - $timestamp) and (.metadata.name != "user1")).metadata.name' | xargs -r -L1 oc delete usersignup
       - name: Send message to Slack
         shell: bash
         env: 
