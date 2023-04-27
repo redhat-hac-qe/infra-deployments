@@ -7,6 +7,7 @@ resources:
   - ../../base/member
   - ../../base/all-clusters
   - ../../base/quality-dashboard
+  - ../../base/host/optional/infra-deployments/hac-pact-broker
 patchesStrategicMerge:
   - delete-applications.yaml
 namespace: openshift-gitops
