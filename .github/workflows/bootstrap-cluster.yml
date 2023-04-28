@@ -69,6 +69,7 @@ jobs:
           oc get usersignup -o json | jq -r --argjson timestamp 172800 '.items[] | select ((.metadata.creationTimestamp | fromdateiso8601 < now - $timestamp) and (.metadata.name != "user1")).metadata.name' | xargs -r -L1 oc delete usersignup
       - name: Send message to Slack
         shell: bash
+        if: always()
         env: 
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           BOOTSTRAP_JOB_STATUS: ${{ steps.bootstrap.outcome }}
