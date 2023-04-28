@@ -2,6 +2,7 @@ name: Bootstrap cluster
 on:
   schedule:
     - cron: '44 4 * *  *'
+  workflow_dispatch:
 jobs:
   bootstrap:
     runs-on: ubuntu-latest
