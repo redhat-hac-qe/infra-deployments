@@ -73,7 +73,7 @@ jobs:
         if: failure()
         env:
           POD_NAME: "vault-0"
-        run:
+        run: |
           oc login --token=$OC_LOGIN_TOKEN --server=$LOGIN_SERVER_URL --insecure-skip-tls-verify
           oc project spi-vault
             
