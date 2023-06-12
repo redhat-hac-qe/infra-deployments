@@ -58,17 +58,13 @@ jobs:
           sed -i "s/IMAGE_CONTROLLER_QUAY_TOKEN=.*/IMAGE_CONTROLLER_QUAY_TOKEN=${IMAGE_CONTROLLER_QUAY_TOKEN}/g" hack/preview.env
 
           # Bootstrap the cluster
-          hack/bootstrap-cluster.sh preview --toolchain --keycloak --broker
+          # hack/bootstrap-cluster.sh preview --toolchain --keycloak --broker
           
           # Set the docker secret to push HAS images to quay if doesn't exist yet
           if [[ ! $(oc get secrets -n build-templates | grep redhat-appstudio-user-workload) ]]; then
             echo $REDHAT_APPSTUDIO_USER_WORKLOAD >> docker.config
             oc create secret docker-registry redhat-appstudio-user-workload -n build-templates --from-file=.dockerconfigjson=docker.config
           fi
-
-          # Prune any user spaces older than 2 days
-          oc project toolchain-host-operator
-          oc get usersignup -o json | jq -r --argjson timestamp 172800 '.items[] | select ((.metadata.creationTimestamp | fromdateiso8601 < now - $timestamp) and (.metadata.name != "user1")).metadata.name' | xargs -r -L1 oc delete usersignup
       - name: Unseal vault if sealed
         if: failure()
         env:
@@ -78,11 +74,34 @@ jobs:
           oc project spi-vault
             
           status=$(oc get pod $POD_NAME -o=jsonpath='{.status.phase}')
+
+          echo "Status of the pod ${POD_NAME} is ${status}"
           
           if [ "$status" != "Running" ]; then
+            echo "Status of a pod ${POD_NAME} is ${status}. Executing poststart.sh"
             oc exec $POD_NAME -- sh /vault/userconfig/scripts/poststart.sh
+
+            echo "Checking Apps statuses till they're Healthy and Synced."
+            echo "10 attempts with 3 minute waits."
+            for i in {1..10}; do
+              echo "$i. try, checking app statuses."
+              healthy=$(oc get applications.argoproj.io --no-headers | grep -v "Healthy")
+              synced=$(oc get applications.argoproj.io --no-headers | grep -v "Synced")
+              if [[ $healthy == null && $synced == null ]]; then 
+                echo "All apps are healthy and synced".; 
+                break
+              else 
+                echo "Some apps are not ready:"; 
+                oc get applications.argoproj.io;
+                echo "Sleeping for 3 minutes and retrying."
+                sleep 180
+              fi
+            done
+
+          else 
+            echo "Status of a pod ${POD_NAME} is ${status}."
           fi
-      - name: Send message to Slack
+      - name: Send a message to Slack
         shell: bash
         if: always()
         env: 
@@ -98,3 +117,16 @@ jobs:
           fi
 
           curl -H "Authorization: Bearer ${SLACK_BOT_TOKEN}" -d "text=${icon} Job *bootstrap* ended with ${BOOTSTRAP_JOB_STATUS}. <$ACTION_URL|View logs>" -d "channel=${CHANNEL_ID}" -X POST https://slack.com/api/chat.postMessage
+  cleanup:
+    runs-on: ubuntu-latest
+    env:
+      OC_LOGIN_TOKEN: ${{ secrets.OC_LOGIN_TOKEN }}
+      LOGIN_SERVER_URL: "https://api.hac-devsandbox.5unc.p1.openshiftapps.com:6443"
+    steps:
+      - name: Prune user signups
+        run: |
+          oc login --token=$OC_LOGIN_TOKEN --server=$LOGIN_SERVER_URL --insecure-skip-tls-verify
+          echo "Prune any user spaces older than 2 days"
+          oc project toolchain-host-operator
+          oc get usersignup -o json | jq -r --argjson timestamp 172800 '.items[] | select ((.metadata.creationTimestamp | fromdateiso8601 < now - $timestamp) and (.metadata.name != "user1")).metadata.name' | xargs -r -L1 oc delete usersignup
+      
