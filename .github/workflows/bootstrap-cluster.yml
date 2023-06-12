@@ -3,12 +3,12 @@ on:
   schedule:
     - cron: '44 4 * *  *'
   workflow_dispatch:
+env:
+  OC_LOGIN_TOKEN: ${{ secrets.OC_LOGIN_TOKEN }}
+  LOGIN_SERVER_URL: "https://api.hac-devsandbox.5unc.p1.openshiftapps.com:6443"
 jobs:
   bootstrap:
     runs-on: ubuntu-latest
-    env:
-      OC_LOGIN_TOKEN: ${{ secrets.OC_LOGIN_TOKEN }}
-      LOGIN_SERVER_URL: "https://api.hac-devsandbox.5unc.p1.openshiftapps.com:6443"
     steps:
       - uses: actions/checkout@v2
       - name: Run bootstrap script
@@ -65,36 +65,75 @@ jobs:
             echo $REDHAT_APPSTUDIO_USER_WORKLOAD >> docker.config
             oc create secret docker-registry redhat-appstudio-user-workload -n build-templates --from-file=.dockerconfigjson=docker.config
           fi
-
-          # Prune any user spaces older than 2 days
-          oc project toolchain-host-operator
-          oc get usersignup -o json | jq -r --argjson timestamp 172800 '.items[] | select ((.metadata.creationTimestamp | fromdateiso8601 < now - $timestamp) and (.metadata.name != "user1")).metadata.name' | xargs -r -L1 oc delete usersignup
       - name: Unseal vault if sealed
         if: failure()
         env:
           POD_NAME: "vault-0"
         run: |
-          oc login --token=$OC_LOGIN_TOKEN --server=$LOGIN_SERVER_URL --insecure-skip-tls-verify
           oc project spi-vault
-            
+
           status=$(oc get pod $POD_NAME -o=jsonpath='{.status.phase}')
-          
+
           if [ "$status" != "Running" ]; then
+            echo "Status of a pod ${POD_NAME} is ${status}. Executing poststart.sh."
             oc exec $POD_NAME -- sh /vault/userconfig/scripts/poststart.sh
+          else 
+            echo "Status of a pod ${POD_NAME} is ${status}."
           fi
-      - name: Send message to Slack
+      - name: Check Application statuses
+        id: statuscheck
+        if: failure()
+        run: |
+          oc project openshift-gitops
+          echo "Checking Apps statuses till they're Healthy and Synced."
+          echo "10 attempts with 3 minute waits."
+
+          healthyAndSynced=false
+          for i in {1..10}; do
+            echo "$i. try, checking app statuses."
+            unhealthy=$(oc get applications.argoproj.io --no-headers | { grep -v "Healthy" || true; } )
+            unsynced=$(oc get applications.argoproj.io --no-headers | { grep -v "Synced" || true; } )
+            if [[ $unhealthy == "" && $unsynced == "" ]]; then 
+              echo "All apps are healthy and synced".; 
+              healthyAndSynced=true
+              break
+            else 
+              echo "Some apps are not ready:"; 
+              oc get applications.argoproj.io;
+              echo "Sleeping for 3 minutes and retrying."
+              sleep 180
+            fi
+          done
+
+          echo "healthy_and_synced=${healthyAndSynced}" >> $GITHUB_OUTPUT
+      - name: Send a message to Slack
         shell: bash
         if: always()
         env: 
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           BOOTSTRAP_JOB_STATUS: ${{ steps.bootstrap.outcome }}
+          HEALTHY_AND_SYNCED: ${{ steps.statuscheck.outputs.healthy_and_synced }}
           CHANNEL_ID: "C04U7TA1BT8" # forum-rhtap-test-execution-alerts
           ACTION_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         run: |
-          if [[ $BOOTSTRAP_JOB_STATUS == 'success' ]]; then
+          if [[ $HEALTHY_AND_SYNCED == true ]]; then
+            statusMessage="Bootstrap script failed but unseal probably helped. Cluster is OK."
+            icon=":done-circle-check:"
+          elif [[ $HEALTHY_AND_SYNCED == "" ]]; then 
+            statusMessage="Bootstrap script succeeded, cluster is OK."
             icon=":done-circle-check:"
           else
+            statusMessage="Bootstrap script failed and unsealing Vault didn't help. Cluster is probably broken."
             icon=":failed:"
-          fi
+          fi;
 
-          curl -H "Authorization: Bearer ${SLACK_BOT_TOKEN}" -d "text=${icon} Job *bootstrap* ended with ${BOOTSTRAP_JOB_STATUS}. <$ACTION_URL|View logs>" -d "channel=${CHANNEL_ID}" -X POST https://slack.com/api/chat.postMessage
+          curl -H "Authorization: Bearer ${SLACK_BOT_TOKEN}" -d "text=${icon} Job *bootstrap* ended. ${statusMessage} <$ACTION_URL|View logs>" -d "channel=${CHANNEL_ID}" -X POST https://slack.com/api/chat.postMessage
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prune user signups
+        run: |
+          oc login --token=$OC_LOGIN_TOKEN --server=$LOGIN_SERVER_URL --insecure-skip-tls-verify
+          echo "Prune any user spaces older than 2 days"
+          oc project toolchain-host-operator
+          oc get usersignup -o json | jq -r --argjson timestamp 172800 '.items[] | select ((.metadata.creationTimestamp | fromdateiso8601 < now - $timestamp) and (.metadata.name != "user1")).metadata.name' | xargs -r -L1 oc delete usersignup
