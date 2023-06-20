@@ -244,11 +244,14 @@ else
   fi
 fi
 
-if ! timeout 100s bash -c "while ! kubectl get applications.argoproj.io -n openshift-gitops -o name | grep -q remote-secret-controller-in-cluster-local; do printf '.'; sleep 5; done"; then
+date
+if ! timeout 300s bash -c "while ! kubectl get applications.argoproj.io -n openshift-gitops -o name | grep -q remote-secret-controller-in-cluster-local; do printf '.'; sleep 5; done"; then
   printf "Application remote-secret-controller-in-cluster-local not found (timeout)\n"
   kubectl get apps -n openshift-gitops -o name
+  date
   exit 1
 else
+  echo "remote-secret-controller-in-cluster-local found at: $(date)"
   if [ "$(oc get applications.argoproj.io  remote-secret-controller-in-cluster-local -n openshift-gitops -o jsonpath='{.status.health.status} {.status.sync.status}')" != "Healthy Synced" ]; then
     echo Initializing remote secret controller
     REMOTE_SECRET_APP_ROLE_FILE=$ROOT/.tmp/approle_remote_secret.yaml
