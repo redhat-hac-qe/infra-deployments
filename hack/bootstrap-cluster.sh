@@ -60,35 +60,21 @@ main() {
         fi
         ;;
     "preview")
-<<<<<<< HEAD
-        $ROOT/hack/preview.sh $toolchain $keycloak $broker
-=======
-        $ROOT/hack/preview.sh $toolchain $keycloak $obo
->>>>>>> main-main
+        $ROOT/hack/preview.sh $toolchain $keycloak $obo $broker
         ;;
     esac
 }
 
 print_help() {
-<<<<<<< HEAD
-    echo "Usae: $0 MODE [-t|--toolchain] [-kc|--keycloak] [-b|--broker] [-h|--help]"
-    echo "  MODE             upstream/preview (default: upstream)"
-    echo "  -t, --toolchain  (only in preview mode) Install toolchain operators"
-    echo "  -kc, --keycloak  (only in preview mode) Configure the toolchain operator to use keycloak deployed on the cluster"
-    echo "  -b, --broker     (only in preview mode) Install Pact Broker"
-    echo "  -h, --help       Show this help message and exit"
-    echo
-    echo "Example usage: \`$0 preview --toolchain --keycloak --broker"
-=======
     echo "Usae: $0 MODE [-t|--toolchain] [-kc|--keycloak] [-o|--obo] [-h|--help]"
     echo "  MODE             upstream/preview (default: upstream)"
     echo "  -t, --toolchain  (only in preview mode) Install toolchain operators"
     echo "  -kc, --keycloak  (only in preview mode) Configure the toolchain operator to use keycloak deployed on the cluster"
     echo "  -o, --obo        (only in preview mode) Install Observability operator and Prometheus instance for federation"
+    echo "  -b, --broker     (only in preview mode) Install Pact Broker"
     echo "  -h, --help       Show this help message and exit"
     echo
-    echo "Example usage: \`$0 preview --toolchain --keycloak --obo"
->>>>>>> main-main
+    echo "Example usage: \`$0 preview --toolchain --keycloak --obo --broker"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
