@@ -5,17 +5,18 @@ ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"/..
 
 # Print help message
 function print_help() {
-  echo "Usage: $0 MODE [--toolchain] [--keycloak] [-h|--help]"
+  echo "Usage: $0 MODE [--toolchain] [--keycloak] [--obo] [-h|--help]"
   echo "  MODE             upstream/preview (default: upstream)"
   echo "  --toolchain  (only in preview mode) Install toolchain operators"
-  echo "  --keycloak  (only in preview mode) Configure the toolchain operator to use keycloak deployed on the cluster"
-  echo " --broker (only in preview mode) Install Pact Broker"
+  echo "  --keycloak   (only in preview mode) Configure the toolchain operator to use keycloak deployed on the cluster"
+  echo "  --obo        (only in preview mode) Install Observability operator and Prometheus instance for federation"
+  echo "  --broker     (only in preview mode) Install Pact Broker"
   echo
   echo "Example usage: \`$0 --toolchain --keycloak --broker"
 }
 TOOLCHAIN=false
 KEYCLOAK=false
-BROKER=false
+OBO=false
 
 while [[ $# -gt 0 ]]; do
   key=$1
@@ -32,6 +33,10 @@ while [[ $# -gt 0 ]]; do
       BROKER=true
       shift
       ;;
+    --obo)
+      OBO=true
+      shift
+      ;;
     -h|--help)
       print_help
       exit 0
@@ -41,6 +46,8 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+
 
 if $TOOLCHAIN ; then
   echo "Deploying toolchain"
@@ -129,9 +136,15 @@ update_patch_file () {
 update_patch_file "${ROOT}/argo-cd-apps/k-components/inject-infra-deployments-repo-details/application-patch.yaml"
 update_patch_file "${ROOT}/argo-cd-apps/k-components/inject-infra-deployments-repo-details/application-set-patch.yaml"
 
+<<<<<<< HEAD
 # if broker should be deployed, add it to deployments
 if $BROKER; then
   yq -i '.resources += "../../base/host/optional/infra-deployments/hac-pact-broker"' argo-cd-apps/overlays/development/kustomization.yaml
+=======
+if $OBO ; then
+  echo "Adding Observability operator and Prometheus for federation"
+  yq -i '.resources += ["monitoringstack/"]' $ROOT/components/monitoring/prometheus/development/kustomization.yaml
+>>>>>>> main-main
 fi
 
 # delete argoCD applications which are not in DEPLOY_ONLY env var if it's set
