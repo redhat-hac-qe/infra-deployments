@@ -34,6 +34,7 @@ jobs:
           # Slashes have to be escaped as those variables are given to sed as a param
           SPI_API_SERVER: "https:\\/\\/api-toolchain-host-operator.apps.hac-devsandbox.5unc.p1.openshiftapps.com"
           HAS_DEFAULT_IMAGE_REPOSITORY: "quay.io\\/hacdev\\/build_service"
+          BROKER: true
         run: |
           # Setup GIT access
           git config --global user.name 'Katka92'
@@ -58,7 +59,7 @@ jobs:
           sed -i "s/IMAGE_CONTROLLER_QUAY_TOKEN=.*/IMAGE_CONTROLLER_QUAY_TOKEN=${IMAGE_CONTROLLER_QUAY_TOKEN}/g" hack/preview.env
 
           # Bootstrap the cluster
-          hack/bootstrap-cluster.sh preview --toolchain --keycloak --broker
+          hack/bootstrap-cluster.sh preview --toolchain --keycloak
           
           # Set the docker secret to push HAS images to quay if doesn't exist yet
           if [[ ! $(oc get secrets -n build-templates | grep redhat-appstudio-user-workload) ]]; then

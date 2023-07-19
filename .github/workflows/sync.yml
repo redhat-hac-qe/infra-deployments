@@ -21,3 +21,11 @@ jobs:
           git fetch upstream
           git merge upstream/main
           git push origin main
+
+      - name: Slack alert on merge failure
+        if: failure()
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          CHANNEL_ID: "C04U7TA1BT8" # forum-rhtap-test-execution-alerts
+        run: |
+          curl -H "Authorization: Bearer ${SLACK_BOT_TOKEN}" -d "text=:alert-siren: infra-deployments upstream merge job failed" -d "channel=${CHANNEL_ID}" -X POST https://slack.com/api/chat.postMessage
