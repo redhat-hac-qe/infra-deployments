@@ -3,7 +3,7 @@
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"/..
 
 main() {
-    local mode keycloak toolchain obo broker
+    local mode keycloak toolchain obo
     while [[ $# -gt 0 ]]; do
         key=$1
         case $key in
@@ -13,10 +13,6 @@ main() {
             ;;
         --keycloak | -kc)
             keycloak="--keycloak"
-            shift
-            ;;
-        --broker | -b)
-            broker="--broker"
             shift
             ;;
         --obo | -o)
@@ -60,7 +56,7 @@ main() {
         fi
         ;;
     "preview")
-        $ROOT/hack/preview.sh $toolchain $keycloak $obo $broker
+        $ROOT/hack/preview.sh $toolchain $keycloak $obo
         ;;
     esac
 }
@@ -71,10 +67,9 @@ print_help() {
     echo "  -t, --toolchain  (only in preview mode) Install toolchain operators"
     echo "  -kc, --keycloak  (only in preview mode) Configure the toolchain operator to use keycloak deployed on the cluster"
     echo "  -o, --obo        (only in preview mode) Install Observability operator and Prometheus instance for federation"
-    echo "  -b, --broker     (only in preview mode) Install Pact Broker"
     echo "  -h, --help       Show this help message and exit"
     echo
-    echo "Example usage: \`$0 preview --toolchain --keycloak --obo --broker"
+    echo "Example usage: \`$0 preview --toolchain --keycloak --obo"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

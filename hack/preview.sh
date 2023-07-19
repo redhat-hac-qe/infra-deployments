@@ -10,9 +10,8 @@ function print_help() {
   echo "  --toolchain  (only in preview mode) Install toolchain operators"
   echo "  --keycloak   (only in preview mode) Configure the toolchain operator to use keycloak deployed on the cluster"
   echo "  --obo        (only in preview mode) Install Observability operator and Prometheus instance for federation"
-  echo "  --broker     (only in preview mode) Install Pact Broker"
   echo
-  echo "Example usage: \`$0 --toolchain --keycloak --broker"
+  echo "Example usage: \`$0 --toolchain --keycloak --obo"
 }
 TOOLCHAIN=false
 KEYCLOAK=false
@@ -27,10 +26,6 @@ while [[ $# -gt 0 ]]; do
       ;;
     --keycloak)
       KEYCLOAK=true
-      shift
-      ;;
-    --broker)
-      BROKER=true
       shift
       ;;
     --obo)
