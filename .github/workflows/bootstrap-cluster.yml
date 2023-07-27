@@ -66,6 +66,23 @@ jobs:
             echo $REDHAT_APPSTUDIO_USER_WORKLOAD >> docker.config
             oc create secret docker-registry redhat-appstudio-user-workload -n build-templates --from-file=.dockerconfigjson=docker.config
           fi
+
+          # Deploy proxy plugin to enable tekton-results
+          if [[ ! $(oc get proxyplugins -n toolchain-host-operator | grep tekton-results) ]]; then
+            echo "Deploying proxy plugin for tekton-results"
+            cat << EOF |
+apiVersion: toolchain.dev.openshift.com/v1alpha1
+kind: ProxyPlugin
+metadata:
+  name: tekton-results
+  namespace: toolchain-host-operator
+spec:
+  openShiftRouteTargetEndpoint:
+    name: tekton-results
+    namespace: tekton-results
+EOF
+            oc apply -f -
+          fi
       - name: Unseal vault if sealed
         if: failure()
         env:
