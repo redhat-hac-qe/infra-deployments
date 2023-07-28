@@ -71,16 +71,16 @@ jobs:
           if [[ ! $(oc get proxyplugins -n toolchain-host-operator | grep tekton-results) ]]; then
             echo "Deploying proxy plugin for tekton-results"
             cat << EOF |
-apiVersion: toolchain.dev.openshift.com/v1alpha1
-kind: ProxyPlugin
-metadata:
-  name: tekton-results
-  namespace: toolchain-host-operator
-spec:
-  openShiftRouteTargetEndpoint:
-    name: tekton-results
-    namespace: tekton-results
-EOF
+            apiVersion: toolchain.dev.openshift.com/v1alpha1
+            kind: ProxyPlugin
+            metadata:
+              name: tekton-results
+              namespace: toolchain-host-operator
+            spec:
+              openShiftRouteTargetEndpoint:
+                name: tekton-results
+                namespace: tekton-results
+            EOF
             oc apply -f -
           fi
       - name: Unseal vault if sealed
