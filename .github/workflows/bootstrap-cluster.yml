@@ -144,3 +144,7 @@ jobs:
           echo "Prune any user spaces older than 2 days"
           oc project toolchain-host-operator
           oc get usersignup -o json | jq -r --argjson timestamp 172800 '.items[] | select ((.metadata.creationTimestamp | fromdateiso8601 < now - $timestamp) and (.metadata.name != "user1")).metadata.name' | xargs -r -L1 oc delete usersignup
+      - name: Remove evicted pods
+        run: |
+          # Get tuple {"reason of failure" "namespace" "pod"} and remove just the "Evicted" pods
+          oc get pods --field-selector "status.phase=Failed" --all-namespaces -o custom-columns=":status.reason,:metadata.namespace,:metadata.name" | xargs -L1 bash -c '[ $0 == "Evicted" ] && oc delete -n $1 pod $2'
