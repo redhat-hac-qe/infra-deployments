@@ -82,6 +82,17 @@ if [ -z "$MY_GIT_FORK_REMOTE" ]; then
     exit 1
 fi
 
+if $BROKER; then
+  if [ -z "$BROKER_USERNAME" ]; then
+    echo "Please export BROKER_USERNAME" 
+    exit 1
+  fi
+  if [ -z "$BROKER_PASSWORD" ]; then
+    echo "Please export BROKER_PASSWORD" 
+    exit 1
+  fi
+fi
+
 MY_GIT_REPO_URL=$(git ls-remote --get-url $MY_GIT_FORK_REMOTE | sed 's|^git@github.com:|https://github.com/|')
 MY_GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 trap "git checkout $MY_GIT_BRANCH" EXIT
@@ -119,6 +130,11 @@ update_patch_file () {
 }
 update_patch_file "${ROOT}/argo-cd-apps/k-components/inject-infra-deployments-repo-details/application-patch.yaml"
 update_patch_file "${ROOT}/argo-cd-apps/k-components/inject-infra-deployments-repo-details/application-set-patch.yaml"
+
+# if broker should be deployed, add it to deployments
+if $BROKER; then
+  yq -i '.resources += "../../base/host/optional/infra-deployments/hac-pact-broker"' argo-cd-apps/overlays/development/kustomization.yaml
+fi
 
 if $OBO ; then
   echo "Adding Observability operator and Prometheus for federation"
