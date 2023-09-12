@@ -101,12 +101,12 @@ jobs:
             unhealthy=$(oc get applications.argoproj.io --no-headers | { grep -v "Healthy" || true; } )
             unsynced=$(oc get applications.argoproj.io --no-headers | { grep -v "Synced" || true; } )
             if [[ $unhealthy == "" && $unsynced == "" ]]; then 
-              echo "All apps are healthy and synced".; 
+              echo "All apps are healthy and synced".
               healthyAndSynced=true
               break
             else 
-              echo "Some apps are not ready:"; 
-              oc get applications.argoproj.io;
+              echo "Some apps are not ready:"
+              oc get applications.argoproj.io
               echo "Sleeping for 3 minutes and retrying."
               sleep 180
             fi
@@ -124,13 +124,13 @@ jobs:
           ACTION_URL: "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         run: |
           if [[ $HEALTHY_AND_SYNCED == true ]]; then
-            statusMessage="Bootstrap script failed but unseal probably helped. Cluster is OK."
-            icon=":done-circle-check:"
+            statusMessage="Bootstrap script failed but application statuses seem ok. Cluster is probably not updated or Vault was not unsealed."
+            icon=":failed:"
           elif [[ $HEALTHY_AND_SYNCED == "" ]]; then 
             statusMessage="Bootstrap script succeeded, cluster is OK."
             icon=":done-circle-check:"
           else
-            statusMessage="Bootstrap script failed and unsealing Vault didn't help. Cluster is probably broken."
+            statusMessage="Bootstrap script failed and applications are not healthy. Cluster is probably broken."
             icon=":failed:"
           fi;
 
