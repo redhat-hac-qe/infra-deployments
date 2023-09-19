@@ -1,4 +1,5 @@
 resources:
+- pact-broker.yaml
 - everyone-can-view.yaml
 - component-maintainer.yaml
 - group-sync/
