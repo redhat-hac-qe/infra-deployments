@@ -11,9 +11,9 @@ configMapGenerator:
   - name: ec-defaults
     namespace: enterprise-contract-service
     literals:
-      - verify_ec_task_bundle=quay.io/enterprise-contract/ec-task-bundle:3e428fc0de5b3ccfd4fad90423e4f121283fd5f4@sha256:395951382d733c631712c4f3dda71cccc6c775fc5a8351859660508e4667d624
+      - verify_ec_task_bundle=quay.io/enterprise-contract/ec-task-bundle:aef44ffb2a30cf424af54df0fe992317fbdab074@sha256:0eb02c875add9d8b9257fad4ac4081dfdad4a921da9ed4c41c146c47f768c91b
       - verify_ec_task_git_url=https://github.com/enterprise-contract/ec-cli.git
-      - verify_ec_task_git_revision=3e428fc0de5b3ccfd4fad90423e4f121283fd5f4
+      - verify_ec_task_git_revision=aef44ffb2a30cf424af54df0fe992317fbdab074
       - verify_ec_task_git_pathInRepo=tasks/verify-enterprise-contract/0.1/verify-enterprise-contract.yaml
 images:
   - name: quay.io/redhat-appstudio/enterprise-contract-controller
