@@ -85,9 +85,11 @@ spec:
           - name: chrome-static
             mountPath: /opt/app-root/src/chrome
           - name: logs
-            mountPath: /var/log
+            mountPath: /var/log/nginx
           - name: nginx-tmp
             mountPath: /var/lib/nginx/tmp
+          - name: run
+            mountPath: /run
         securityContext:
           readOnlyRootFilesystem: true
           runAsNonRoot: true
@@ -104,6 +106,8 @@ spec:
         - name: logs
           emptyDir: {}
         - name: nginx-tmp
+          emptyDir: {}
+        - name: run
           emptyDir: {}
 ---
 apiVersion: v1
