@@ -253,9 +253,6 @@ $ROOT/hack/spi/spi-init.sh
 # Init Remote Secret
 $ROOT/hack/spi/remote-secret-init.sh
 
-# Configure Pipelines as Code and required credentials
-$ROOT/hack/build/setup-pac-integration.sh
-
 APPS=$(oc get apps -n openshift-gitops -o name)
 # trigger refresh of apps
 for APP in $APPS; do
@@ -369,4 +366,7 @@ while true; do
   sleep $INTERVAL
   retry=$((retry + 1))
 done
+
+# Configure Pipelines as Code and required credentials
+$ROOT/hack/build/setup-pac-integration.sh
 
