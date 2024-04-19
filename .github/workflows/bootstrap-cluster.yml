@@ -24,6 +24,9 @@ jobs:
           SPI_GITHUB_CLIENT_SECRET: ${{ secrets.SPI_GITHUB_CLIENT_SECRET }}
           IMAGE_CONTROLLER_QUAY_TOKEN: ${{ secrets.IMAGE_CONTROLLER_QUAY_TOKEN }}
           REDHAT_APPSTUDIO_USER_WORKLOAD: ${{ secrets.REDHAT_APPSTUDIO_USER_WORKLOAD }}
+          PAC_GITHUB_APP_PRIVATE_KEY: ${{ secrets.PAC_GITHUB_APP_PRIVATE_KEY_BASE64 }}
+          PAC_GITHUB_APP_ID: ${{ secrets.PAC_GITHUB_APP_ID }}
+          PAC_GITHUB_APP_WEBHOOK_SECRET: ${{ secrets.PAC_GITHUB_APP_WEBHOOK_SECRET }}
           # setting variables
           BROKER_USERNAME: "pactUser"
           MY_GIT_FORK_REMOTE: "origin"
@@ -45,6 +48,9 @@ jobs:
           
           cp hack/preview-template.env hack/preview.env
 
+          sed -i "s/PAC_GITHUB_APP_PRIVATE_KEY=.*/PAC_GITHUB_APP_PRIVATE_KEY=${PAC_GITHUB_APP_PRIVATE_KEY}/g" hack/preview.env
+          sed -i "s/PAC_GITHUB_APP_ID=.*/PAC_GITHUB_APP_ID=${PAC_GITHUB_APP_ID}/g" hack/preview.env
+          sed -i "s/PAC_GITHUB_APP_WEBHOOK_SECRET=.*/PAC_GITHUB_APP_WEBHOOK_SECRET=${PAC_GITHUB_APP_WEBHOOK_SECRET}/g" hack/preview.env
           sed -i "s/BROKER_PASSWORD=.*/BROKER_PASSWORD=${BROKER_PASSWORD}/g" hack/preview.env
           sed -i "s/MY_GITHUB_TOKEN=.*/MY_GITHUB_TOKEN=${MY_GITHUB_TOKEN}/g" hack/preview.env
           sed -i "s/SHARED_SECRET=.*/SHARED_SECRET=${SHARED_SECRET}/g" hack/preview.env
