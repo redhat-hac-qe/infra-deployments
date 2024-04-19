@@ -47,8 +47,8 @@ jobs:
           oc login --token=$OC_LOGIN_TOKEN --server=$LOGIN_SERVER_URL --insecure-skip-tls-verify
           
           cp hack/preview-template.env hack/preview.env
-
-          sed -i "s/PAC_GITHUB_APP_PRIVATE_KEY=.*/PAC_GITHUB_APP_PRIVATE_KEY=${PAC_GITHUB_APP_PRIVATE_KEY}/g" hack/preview.env
+          
+          # awk -i inplace -v old="PAC_GITHUB_APP_PRIVATE_KEY=" -v new="PAC_GITHUB_APP_PRIVATE_KEY=$PAC_GITHUB_APP_PRIVATE_KEY" '{gsub(old, new)}1' "hack/preview.env" 
           sed -i "s/PAC_GITHUB_APP_ID=.*/PAC_GITHUB_APP_ID=${PAC_GITHUB_APP_ID}/g" hack/preview.env
           sed -i "s/PAC_GITHUB_APP_WEBHOOK_SECRET=.*/PAC_GITHUB_APP_WEBHOOK_SECRET=${PAC_GITHUB_APP_WEBHOOK_SECRET}/g" hack/preview.env
           sed -i "s/BROKER_PASSWORD=.*/BROKER_PASSWORD=${BROKER_PASSWORD}/g" hack/preview.env
