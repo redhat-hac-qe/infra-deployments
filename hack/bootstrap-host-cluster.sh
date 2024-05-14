@@ -6,6 +6,7 @@ main() {
     load_global_vars
     "${ROOT}/secret-creator/create-pact-broker-secret.sh" "${BROKER_USERNAME:-undefined}" "${BROKER_PASSWORD:-undefined}"
     "${ROOT}/secret-creator/quality-dashboard/create-quality-dashboard-secrets.sh"
+    "${ROOT}/secret-creator/create-ci-helper-app-secret.sh"
 }
 
 load_global_vars() {
