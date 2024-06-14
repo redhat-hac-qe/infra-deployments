@@ -1,7 +1,7 @@
 name: Bootstrap cluster
 on:
   schedule:
-    - cron: '44 4 * *  *'
+    - cron: '14 4 * *  *'
   workflow_dispatch:
 env:
   OC_LOGIN_TOKEN: ${{ secrets.OC_LOGIN_TOKEN }}
