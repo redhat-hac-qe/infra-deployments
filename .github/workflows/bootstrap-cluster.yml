@@ -22,7 +22,7 @@ jobs:
           SHARED_SECRET: ${{ secrets.SHARED_SECRET }}
           SPI_GITHUB_CLIENT_ID: ${{ secrets.SPI_GITHUB_CLIENT_ID }}
           SPI_GITHUB_CLIENT_SECRET: ${{ secrets.SPI_GITHUB_CLIENT_SECRET }}
-          IMAGE_CONTROLLER_QUAY_TOKEN: ${{ secrets.IMAGE_CONTROLLER_QUAY_TOKEN }}
+          IMAGE_CONTROLLER_QUAY_TOKEN: ${{ secrets.IMAGE_CONTROLLER_QUAY_TOKEN_KONFLUX_QE }}
           REDHAT_APPSTUDIO_USER_WORKLOAD: ${{ secrets.REDHAT_APPSTUDIO_USER_WORKLOAD }}
           PAC_GITHUB_APP_PRIVATE_KEY: ${{ secrets.PAC_GITHUB_APP_PRIVATE_KEY_BASE64 }}
           PAC_GITHUB_APP_ID: ${{ secrets.PAC_GITHUB_APP_ID }}
@@ -31,12 +31,12 @@ jobs:
           BROKER_USERNAME: "pactUser"
           MY_GIT_FORK_REMOTE: "origin"
           MY_GITHUB_ORG: "redhat-hac-qe"
-          IMAGE_CONTROLLER_QUAY_ORG: "hacdev"
+          IMAGE_CONTROLLER_QUAY_ORG: "redhat-appstudio-qe"
           SPI_TYPE: "Github"
           OC_DOWNLOAD_URL: "https://downloads-openshift-console.apps.hac-devsandbox.5unc.p1.openshiftapps.com/amd64/linux/oc.tar"
           # Slashes have to be escaped as those variables are given to sed as a param
           SPI_API_SERVER: "https:\\/\\/api-toolchain-host-operator.apps.hac-devsandbox.5unc.p1.openshiftapps.com"
-          HAS_DEFAULT_IMAGE_REPOSITORY: "quay.io\\/hacdev\\/build_service"
+          HAS_DEFAULT_IMAGE_REPOSITORY: "quay.io\\/redhat-appstudio-qe\\/build_service"
           BROKER: true
         run: |
           # Setup GIT access
