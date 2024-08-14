@@ -65,6 +65,8 @@ jobs:
           sed -i "s/IMAGE_CONTROLLER_QUAY_ORG=.*/IMAGE_CONTROLLER_QUAY_ORG=${IMAGE_CONTROLLER_QUAY_ORG}/g" hack/preview.env
           sed -i "s/IMAGE_CONTROLLER_QUAY_TOKEN=.*/IMAGE_CONTROLLER_QUAY_TOKEN=${IMAGE_CONTROLLER_QUAY_TOKEN}/g" hack/preview.env
 
+          export PATH=${PATH}:/home/runner/go/bin
+
           # Bootstrap the cluster
           hack/bootstrap-cluster.sh preview --toolchain --keycloak
           
