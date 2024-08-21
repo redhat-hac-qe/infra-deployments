@@ -34,7 +34,8 @@ data:
     linux-c8xlarge/arm64,\
     linux-g4xlarge/amd64,\
     linux-root/arm64,\
-    linux-root/amd64\
+    linux-root/amd64,\
+    linux/s390x\
     "
   instance-tag: rhtap-staging
 
@@ -300,7 +301,7 @@ data:
   # host.ibmz1.concurrency: "4"
 
   dynamic.linux-s390x.type: ibmz
-  dynamic.linux-s390x.ssh-secret: "ibm-ssh-key"
+  dynamic.linux-s390x.ssh-secret: "ibm-stage-s390x-ssh-key"
   dynamic.linux-s390x.secret: "public-stage-ibm-api-key"
   dynamic.linux-s390x.vpc: "us-east-default-vpc"
   dynamic.linux-s390x.key: "konflux-s390x-root"
