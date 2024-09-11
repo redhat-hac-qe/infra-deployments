@@ -5,8 +5,8 @@ namespace: multi-platform-controller
 
 resources:
 - common
-- https://github.com/mshaposhnik/multi-platform-controller/deploy/operator?ref=2ce3826706ab0c6b32abdf5e28c01da8f732bac8
-- https://github.com/mshaposhnik/multi-platform-controller/deploy/otp?ref=2ce3826706ab0c6b32abdf5e28c01da8f732bac8
+- https://github.com/mshaposhnik/multi-platform-controller/deploy/operator?ref=91c59577f97637a5eef14d6dd8f75be5387fee5b
+- https://github.com/mshaposhnik/multi-platform-controller/deploy/otp?ref=91c59577f97637a5eef14d6dd8f75be5387fee5b
 
 images:
 - name: multi-platform-controller
