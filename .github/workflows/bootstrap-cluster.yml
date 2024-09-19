@@ -67,12 +67,6 @@ jobs:
 
           export PATH=${PATH}:/home/runner/go/bin
 
-          # Workaround issue that we can't update OSD cluster to 4.15 but pipelines requires new version of kubernetes
-          sed -i "s/quay.io\/openshift-pipeline\/openshift-pipelines-pipelines-operator-bundle-container-index@.*/quay.io\/openshift-pipeline\/openshift-pipelines-pipelines-operator-bundle-container-index@sha256:99d1e1ba1c24d950db7147e26041193304247ed92e88788023b58eb787282a9a/" components/pipeline-service/development/main-pipeline-service-configuration.yaml
-          sed -i "s/artifacts.pipelinerun.enable-deep-inspection: \"true\"/artifacts.pipelinerun.enable-deep-inspection: true/" components/pipeline-service/development/main-pipeline-service-configuration.yaml
-          git status
-          git commit -am "fix: install older pipelines"
-
           # Bootstrap the cluster
           hack/bootstrap-cluster.sh preview --toolchain --keycloak
           
