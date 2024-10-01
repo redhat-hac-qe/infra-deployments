@@ -364,7 +364,7 @@ data:
   dynamic.linux-s390x.region: "us-east-1"
   dynamic.linux-s390x.url: "https://us-east.iaas.cloud.ibm.com/v1"
   dynamic.linux-s390x.profile: "bz2-2x8"
-  dynamic.linux-s390x.max-instances: "20"
+  dynamic.linux-s390x.max-instances: "50"
   dynamic.linux-s390x.private-ip: "true"
 
   ## IBM s390x with 4CPU 16GiB RAM ####
@@ -378,7 +378,7 @@ data:
   dynamic.linux-large-s390x.region: "us-east-1"
   dynamic.linux-large-s390x.url: "https://us-east.iaas.cloud.ibm.com/v1"
   dynamic.linux-large-s390x.profile: "bz2-4x16"
-  dynamic.linux-large-s390x.max-instances: "20"
+  dynamic.linux-large-s390x.max-instances: "50"
   dynamic.linux-large-s390x.private-ip: "true"
 
 
@@ -458,11 +458,11 @@ data:
   host.power-konflux-prod-large-2.concurrency: "1"
 
   #IBM GPU Node
-  host.ibm-gpu-amd64.address: "10.130.81.14"
-  host.ibm-gpu-amd64.platform: "linux-ibm-gpu/amd64"
-  host.ibm-gpu-amd64.user: "root"
-  host.ibm-gpu-amd64.secret: "internal-prod-ibm-ssh-key"
-  host.ibm-gpu-amd64.concurrency: "4"
+  # host.ibm-gpu-amd64.address: "10.130.81.14"
+  # host.ibm-gpu-amd64.platform: "linux-ibm-gpu/amd64"
+  # host.ibm-gpu-amd64.user: "root"
+  # host.ibm-gpu-amd64.secret: "internal-prod-ibm-ssh-key"
+  # host.ibm-gpu-amd64.concurrency: "4"
 
   # AWS GPU Nodes
   dynamic.linux-g6xlarge-amd64.type: aws
