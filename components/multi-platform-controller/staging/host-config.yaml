@@ -32,13 +32,22 @@ data:
     linux-c4xlarge/arm64,\
     linux-c8xlarge/amd64,\
     linux-c8xlarge/arm64,\
-    linux-gdnxlarge/amd64,\
+    linux-g6xlarge/amd64,\
     linux-g4xlarge/amd64,\
     linux-root/arm64,\
     linux-root/amd64,\
     linux/s390x\
     "
   instance-tag: rhtap-staging
+
+  additional-instance-tags: "\
+    Project=Konflux,\
+    Owner=konflux-infra@redhat.com,\
+    ManagedBy=Konflux Infra Team,\
+    app-code=ASSH-001,\
+    service-phase=Staging,\
+    cost-center=670\
+    "
 
   # cpu:memory (1:4)
   dynamic.linux-arm64.type: aws
@@ -306,26 +315,26 @@ data:
   dynamic.linux-s390x.secret: "public-stage-ibm-api-key"
   dynamic.linux-s390x.vpc: "us-east-default-vpc"
   dynamic.linux-s390x.key: "konflux-s390x-root"
-  dynamic.linux-s390x.subnet: "us-east-prod-subnet-0"
+  dynamic.linux-s390x.subnet: "konflux-ext-subnet"
   dynamic.linux-s390x.image-id: "r014-96daa951-6026-4112-95b1-87e86e82fcf3"
   dynamic.linux-s390x.region: "us-east-2"
   dynamic.linux-s390x.url: "https://us-east.iaas.cloud.ibm.com/v1"
   dynamic.linux-s390x.profile: "bz2-2x8"
   dynamic.linux-s390x.max-instances: "4"
-  dynamic.linux-s390x.private-ip: "false"
+  dynamic.linux-s390x.private-ip: "true"
 
 # GPU Instances
-  dynamic.linux-gdnxlarge-amd64.type: aws
-  dynamic.linux-gdnxlarge-amd64.region: us-east-1
-  dynamic.linux-gdnxlarge-amd64.ami: ami-026ebd4cfe2c043b2
-  dynamic.linux-gdnxlarge-amd64.instance-type: g4dn.xlarge
-  dynamic.linux-gdnxlarge-amd64.key-name: konflux-stage-ext-mab01
-  dynamic.linux-gdnxlarge-amd64.aws-secret: aws-account
-  dynamic.linux-gdnxlarge-amd64.ssh-secret: aws-ssh-key
-  dynamic.linux-gdnxlarge-amd64.security-group-id: sg-05bc8dd0b52158567
-  dynamic.linux-gdnxlarge-amd64.max-instances: "10"
-  dynamic.linux-gdnxlarge-amd64.subnet-id: subnet-030738beb81d3863a
-  dynamic.linux-gdnxlarge.user-data: |-
+  dynamic.linux-g6xlarge-amd64.type: aws
+  dynamic.linux-g6xlarge-amd64.region: us-east-1
+  dynamic.linux-g6xlarge-amd64.ami: ami-0ad6c6b0ac6c36199
+  dynamic.linux-g6xlarge-amd64.instance-type: g6.xlarge
+  dynamic.linux-g6xlarge-amd64.key-name: konflux-stage-ext-mab01
+  dynamic.linux-g6xlarge-amd64.aws-secret: aws-account
+  dynamic.linux-g6xlarge-amd64.ssh-secret: aws-ssh-key
+  dynamic.linux-g6xlarge-amd64.security-group-id: sg-05bc8dd0b52158567
+  dynamic.linux-g6xlarge-amd64.max-instances: "10"
+  dynamic.linux-g6xlarge-amd64.subnet-id: subnet-030738beb81d3863a
+  dynamic.linux-g6xlarge-amd64.user-data: |-
     Content-Type: multipart/mixed; boundary="//"
     MIME-Version: 1.0
 
@@ -348,38 +357,39 @@ data:
     #!/bin/bash -ex
 
     if lsblk -no FSTYPE /dev/nvme1n1 | grep -qE '\S'; then
-     echo "File system exists on the disk."
+      echo "File system exists on the disk."
     else
-     echo "No file system found on the disk /dev/nvme1n1"
-     mkfs -t xfs /dev/nvme1n1
+      echo "No file system found on the disk /dev/nvme1n1"
+      mkfs -t xfs /dev/nvme1n1
     fi
 
     mount /dev/nvme1n1 /home
 
     if [ -d "/home/var-lib-containers" ]; then
-     echo "Directory '/home/var-lib-containers' exist"
+      echo "Directory '/home/var-lib-containers' exist"
     else
-     echo "Directory '/home/var-lib-containers' doesn't exist"
-     mkdir -p /home/var-lib-containers /var/lib/containers
+      echo "Directory '/home/var-lib-containers' doesn't exist"
+      mkdir -p /home/var-lib-containers /var/lib/containers
     fi
 
     mount --bind /home/var-lib-containers /var/lib/containers
 
     if [ -d "/home/var-tmp" ]; then
-     echo "Directory '/home/var-tmp' exist"
+      echo "Directory '/home/var-tmp' exist"
     else
-     echo "Directory '/home/var-tmp' doesn't exist"
-     mkdir -p /home/var-tmp /var/tmp
+      echo "Directory '/home/var-tmp' doesn't exist"
+      mkdir -p /home/var-tmp /var/tmp
     fi
-    
+
     mount --bind /home/var-tmp /var/tmp
-    
+    chmod a+rw /var/tmp
+
     if [ -d "/home/ec2-user" ]; then
-    echo "ec2-user home exists"
+      echo "ec2-user home exists"
     else
-    echo "ec2-user home doesn't exist"
-    mkdir -p /home/ec2-user/.ssh
-    chown -R ec2-user /home/ec2-user
+      echo "ec2-user home doesn't exist"
+      mkdir -p /home/ec2-user/.ssh
+      chown -R ec2-user /home/ec2-user
     fi
 
     sed -n 's,.*\(ssh-.*\s\),\1,p' /root/.ssh/authorized_keys > /home/ec2-user/.ssh/authorized_keys
@@ -388,4 +398,8 @@ data:
     chmod 700 /home/ec2-user/.ssh
     restorecon -r /home/ec2-user
 
+    mkdir -p /etc/cdi
+    chmod a+rwx /etc/cdi
+    su - ec2-user
+    nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
     --//--

@@ -1,0 +1,18 @@
+---
+- op: add
+  path: /spec/template/spec/source/helm/parameters/-
+  value:
+    name: baseDomain
+    value: ""
+
+- op: add
+  path: /spec/template/spec/source/helm/parameters/-
+  value:
+    name: hypershiftImage
+    value: registry.redhat.io/multicluster-engine/hypershift-rhel9-operator:v2.7
+
+- op: add
+  path: /spec/template/spec/source/helm/parameters/-
+  value:
+    name: hypershiftRoleArn
+    value: ""

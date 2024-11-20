@@ -1,7 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - gitops
   - application-api
   - has
   - release
@@ -18,8 +17,13 @@ resources:
   - project-controller
   - spacerequest-cleaner
   - mintmaker
+  - nvme-storage-configurator
   - tracing-workload-otel-collector
   - tempo
   - notification-controller
+  - kubearchive
+  - workspaces
+  - proactive-scaler
+  - knative-eventing
 components:
   - ../../../k-components/inject-infra-deployments-repo-details

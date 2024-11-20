@@ -29,3 +29,24 @@ kind: ApplicationSet
 metadata:
   name: quality-dashboard
 $patch: delete
+---
+# There is not RDS database provisioned yet for internal staging, starting with external staging only
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: kubearchive
+$patch: delete
+---
+# Workspaces CRD is already installed in single cluster setup
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: workspaces-member
+$patch: delete
+---
+# KubeArchive is not yet installed here
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: knative-eventing
+$patch: delete

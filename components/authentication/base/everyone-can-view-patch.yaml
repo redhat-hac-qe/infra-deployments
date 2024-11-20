@@ -16,9 +16,6 @@
       name: 'konflux-ec'
     - kind: Group
       apiGroup: rbac.authorization.k8s.io
-      name: 'konflux-gitops'
-    - kind: Group
-      apiGroup: rbac.authorization.k8s.io
       name: 'konflux-hac'
     - kind: Group
       apiGroup: rbac.authorization.k8s.io
@@ -50,3 +47,6 @@
     - kind: Group
       apiGroup: rbac.authorization.k8s.io
       name: 'konflux-release-team'
+    - kind: Group
+      apiGroup: rbac.authorization.k8s.io
+      name: 'konflux-kubearchive'
