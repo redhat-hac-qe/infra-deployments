@@ -12,7 +12,7 @@ resources:
   - ../../base/ui
   - ../../base/eaas
   - ../../base/toolchain-member
-
+  - ../../base/host/optional/infra-deployments/hac-pact-broker
 patchesStrategicMerge:
   - delete-applications.yaml
 namespace: openshift-gitops
